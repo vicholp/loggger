@@ -1,4 +1,5 @@
 /vendor
+/vscode
 .env
-
+public/.htaccess
 error_log
