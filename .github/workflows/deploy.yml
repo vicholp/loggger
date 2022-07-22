@@ -1,0 +1,64 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - prod
+
+  workflow_dispatch:
+
+jobs:
+  build_deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Settings for main
+        if: ${{ github.ref == 'refs/heads/main' }}
+        # Side note, I can run any Linux command here, not just 'echo'
+        run: |
+          echo "REMOTE_PATH=${{ secrets.REMOTE_PATH_MAIN }}" >> $GITHUB_ENV
+
+      - name: Settings for prod
+        if: ${{ github.ref == 'refs/heads/prod' }}
+        run: |
+          echo "REMOTE_PATH=${{ secrets.REMOTE_PATH_PROD }}" >> $GITHUB_ENV
+
+      - name: Clone repo
+        uses: actions/checkout@v2
+        with:
+          path: source
+
+
+      - name: Read php-version
+        id: php-version
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: source/.php-version
+
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ steps.php-version.outputs.content }}
+
+      - name: Cache Composer
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v2
+        with:
+          path: source/vendor
+          key: ${{ runner.os }}-${{ hashFiles('source/composer.lock') }}
+
+      - name: Build source
+        working-directory: source
+        run: .github/scripts/prod-build.sh
+
+      - name: deploy to server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          ARGS: "-a -c -v -z -h --exclude-from='source/.rsyncignore' --delete-after"
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
+          TARGET: ${{ env.REMOTE_PATH }}
+          SOURCE: source/
+

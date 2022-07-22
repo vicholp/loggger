@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS `log_temps` (
+    `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+    `temp` FLOAT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS `log_distances` (
+    `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+    `distance` FLOAT NOT NULL
+);
