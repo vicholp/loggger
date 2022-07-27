@@ -35,11 +35,23 @@ jobs:
         with:
           path: source/.php-version
 
+      - name: Read node-version
+        id: node-version
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: source/.node-version
+
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ steps.php-version.outputs.content }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ steps.node-version.outputs.content }}
+
 
       - name: Cache Composer
         if: ${{ !env.ACT }}
@@ -47,6 +59,13 @@ jobs:
         with:
           path: source/vendor
           key: ${{ runner.os }}-${{ hashFiles('source/composer.lock') }}
+
+      - name: Cache NPM
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v2
+        with:
+          path: source/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('source/package-lock.json') }}
 
       - name: Build source
         working-directory: source
