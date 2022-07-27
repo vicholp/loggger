@@ -1,2 +1,2 @@
-DROP TABLE IF EXISTS log_temps;
-DROP TABLE IF EXISTS log_distances;
+DROP TABLE IF EXISTS measures;
+DROP TABLE IF EXISTS sensors;

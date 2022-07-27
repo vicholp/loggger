@@ -27,6 +27,11 @@ class Router
         $this->routes->addCollection((new WebRouter())->routes());
     }
 
+    public function getRoutes(): RouteCollection
+    {
+        return $this->routes;
+    }
+
     public function route(): Response
     {
         $request = Request::createFromGlobals();
@@ -37,6 +42,11 @@ class Router
         $matcher = new UrlMatcher($this->routes, $context);
         $parameters = $matcher->match($request->getPathInfo());
 
-        return (new $parameters['_controller']())->{$parameters['_action']}($request);
+        $args = $parameters;
+        unset($args['_controller']);
+        unset($args['_action']);
+        unset($args['_route']);
+
+        return (new $parameters['_controller']())->{$parameters['_action']}($request, ...$args);
     }
 }
